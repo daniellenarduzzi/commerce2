@@ -29,10 +29,6 @@ if (!firebase.apps.length) {
 const DB = firebase.database()
 const productos = DB.ref('productos')
 
-productos.once('value').then((snapshot) => {
-  const productos = firebaseLo(snapshot)
-  console.log(productos)
-})
 const firebaseLo = (snapshot: any) => {
   const data: any = [];
   snapshot.forEach((childSnapshot: any)=>{
@@ -50,11 +46,31 @@ export async function getStaticProps({
 }: GetStaticPropsContext) {
   const config = getConfig({ locale })
 
-  const { products: featuredProducts } = await getAllProducts({
+  const snapshotFb = await productos.once('value')
+  const productosFb = firebaseLo(snapshotFb)
+  const { products } = await getAllProducts({
     variables: { field: 'featuredProducts', first: 6 },
     config,
     preview,
   })
+  const featuredProducts = products.map((prod, i) => ({
+    ...prod, 
+    node: { 
+      ...prod.node, 
+      name: productosFb[i].titulo, 
+      prices: {
+        ...prod.node.prices, 
+        price: {
+          ...prod.node.prices.price, 
+          value: productosFb[i].precio
+        }
+      },
+      images: {
+        ...prod.node.images,
+        edges: [{node: {...prod.node.images.edges[0].node, urlOriginal: productosFb[i].imagen}}, prod.node.images.edges.slice(1, 10)]
+      }
+    }
+  }))
   const { products: bestSellingProducts } = await getAllProducts({
     variables: { field: 'bestSellingProducts', first: 6 },
     config,
