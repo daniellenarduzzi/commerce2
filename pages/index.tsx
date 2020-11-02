@@ -9,6 +9,40 @@ import { Layout } from '@components/core'
 import { Grid, Marquee, Hero } from '@components/ui'
 import { ProductCard } from '@components/product'
 import HomeAllProductsGrid from '@components/core/HomeAllProductsGrid'
+import firebase from 'firebase'
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCUSCJSej37Ronl9qwL7nTHeGpANXWtFm4",
+  authDomain: "pilardecotest.firebaseapp.com",
+  databaseURL: "https://pilardecotest.firebaseio.com",
+  projectId: "pilardecotest",
+  storageBucket: "pilardecotest.appspot.com",
+  messagingSenderId: "870066878275",
+  appId: "1:870066878275:web:fc89df24f1f05f45c021f6",
+  measurementId: "G-PYLT95N95Z"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+const DB = firebase.database()
+const productos = DB.ref('productos')
+
+productos.once('value').then((snapshot) => {
+  const productos = firebaseLo(snapshot)
+  console.log(productos)
+})
+const firebaseLo = (snapshot: any) => {
+  const data: any = [];
+  snapshot.forEach((childSnapshot: any)=>{
+      data.push({
+          ...childSnapshot.val(),
+          id:childSnapshot.key
+      })
+  })
+  return data
+}
 
 export async function getStaticProps({
   preview,
